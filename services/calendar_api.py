@@ -1,13 +1,12 @@
 import os
 import json
-import uuid
 from datetime import datetime, timedelta
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 # --- НАСТРОЙКИ ---
-# Укажите ваш email (тот же, что использовали при расшаривании календаря)
-CALENDAR_ID = 'eugen.myakotin@gmail.com'  # ваш email
+# Укажите ваш email (тот же, что использовали для расшаривания календаря)
+CALENDAR_ID = 'eugen.myakotin@gmail.com'  # замените на ваш email
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 def get_calendar_service():
@@ -30,7 +29,10 @@ async def create_meeting(client_name: str, start_time_iso: str, duration_minutes
     
     event = {
         'summary': f'Созвон с клиентом {client_name}',
-        'description': 'Обсуждение разработки AI-чат-бота.\n\nСсылка для созвона: Telegram, Zoom или Яндекс Телемост (уточните у администратора).',
+        'description': (
+            'Обсуждение разработки AI-чат-бота.\n\n'
+            'Ссылка для созвона: Telegram, Zoom или Яндекс Телемост (уточните у администратора).'
+        ),
         'start': {
             'dateTime': start_time.isoformat(),
             'timeZone': 'Europe/Moscow',
@@ -39,7 +41,7 @@ async def create_meeting(client_name: str, start_time_iso: str, duration_minutes
             'dateTime': end_time.isoformat(),
             'timeZone': 'Europe/Moscow',
         },
-        # Убираем attendees и sendUpdates, чтобы избежать ошибки 403
+        # Нет attendees и sendUpdates – избегаем ошибки 403
     }
     
     created_event = service.events().insert(
@@ -48,5 +50,5 @@ async def create_meeting(client_name: str, start_time_iso: str, duration_minutes
     ).execute()
     
     event_link = created_event.get('htmlLink')
-    meet_link = "🔗 Ссылка на созвон будет отправлена отдельным сообщением (Telegram, Zoom или Яндекс Телемост)"
+    meet_link = "🔗 Ссылка на созвон будет отправлена отдельным сообщением"
     return meet_link, event_link
