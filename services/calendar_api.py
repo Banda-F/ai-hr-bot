@@ -7,7 +7,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-CALENDAR_ID = 'eugen.myakotin@gmail.com'  # ваш email
+CALENDAR_ID = '2aaa86103a80fe5ca97d6751d6c3c92c1e7e4a41b7c48078699afb0351bfcac9@group.calendar.google.com'  # ваш email
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 def get_calendar_service():
