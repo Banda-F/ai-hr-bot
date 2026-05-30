@@ -11,3 +11,7 @@ beautifulsoup4==4.12.3
 lxml==5.3.1
 telethon==1.37.0
 redis==5.0.8
+google-api-python-client==2.140.0
+google-auth-httplib2==0.2.0
+google-auth==2.38.0
+gigachat==0.2.1
