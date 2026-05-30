@@ -1,16 +1,11 @@
 import os
 import json
-import uuid
 from datetime import datetime, timedelta
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-# --- ПЕРЕМЕННЫЕ ДЛЯ НАСТРОЙКИ ---
-# !!! ВАЖНО: Замените 'ваш-email@gmail.com' на ваш реальный email
+# Ваш личный email
 MY_EMAIL = 'eugen.myakotin@gmail.com'
-# Убедитесь, что здесь используется ID вашего календаря
-CALENDAR_ID = 'eugen.myakotin@gmail.com'
-# -------------------------------
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
@@ -20,7 +15,7 @@ def get_calendar_service():
         creds_dict = json.loads(creds_json)
         creds = service_account.Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
     else:
-        # fallback для локальной разработки (если файл)
+        # fallback для локальной разработки
         SERVICE_ACCOUNT_FILE = 'credentials/service_account.json'
         if os.path.exists(SERVICE_ACCOUNT_FILE):
             creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
@@ -35,8 +30,7 @@ async def create_meeting(client_name: str, start_time_iso: str, duration_minutes
     
     event = {
         'summary': f'Созвон с клиентом {client_name}',
-        'description': 'Обсуждение разработки AI-чат-бота.\n\n'
-                       'Ссылка для созвона будет отправлена отдельным сообщением (Telegram, Zoom или Яндекс Телемост).',
+        'description': 'Обсуждение разработки AI-чат-бота.\n\nСсылка для созвона будет отправлена отдельным сообщением.',
         'start': {
             'dateTime': start_time.isoformat(),
             'timeZone': 'Europe/Moscow',
@@ -46,16 +40,19 @@ async def create_meeting(client_name: str, start_time_iso: str, duration_minutes
             'timeZone': 'Europe/Moscow',
         },
         'attendees': [
-            {'email': MY_EMAIL}  # <-- Добавляем вас как участника
+            {'email': MY_EMAIL},  # добавляем вас
         ],
+        'sendUpdates': 'all',     # отправляем приглашение
     }
     
+    # Создаём событие в календаре сервисного аккаунта (primary),
+    # но с вами как участником — вы получите приглашение и сможете добавить в свой календарь
     created_event = service.events().insert(
-        calendarId=CALENDAR_ID,  # <-- Используем ID вашего календаря
+        calendarId='primary',
         body=event,
-        sendUpdates='all'        # <-- Отправляем приглашение на почту
+        sendUpdates='all'
     ).execute()
     
     event_link = created_event.get('htmlLink')
-    meet_link = "🔗 Ссылка на созвон будет отправлена отдельным сообщением"
+    meet_link = "🔗 Ссылка на созвон будет отправлена отдельным сообщением (Telegram, Zoom или Яндекс Телемост)"
     return meet_link, event_link
