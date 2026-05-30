@@ -1,25 +1,14 @@
-from aiogram import Router, types, F
+from aiogram import Router, types
 from aiogram.filters import Command
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
-from utils.config import ADMIN_CHAT_ID
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from models.database import AsyncSessionLocal, Client
-from sqlalchemy import select, func
+from sqlalchemy import select
+from utils.config import ADMIN_CHAT_ID
 
 router = Router()
 
-@router.message(Command("start"))
-async def start(message: Message):
-    await message.answer(
-        "🤖 Привет! Я AI-бот для создания AI-ботов.\n\n"
-        "Я помогу автоматизировать ваш бизнес: сбор заявок, консультации, продажи 24/7.\n"
-        "🔹 Примеры работ и цены: /price\n"
-        "🔹 Портфолио: /portfolio\n"
-        "🔹 Связаться со мной: /contact\n\n"
-        "Также я сам нахожу заказы в чатах – если вам нужен бот, просто напишите!"
-    )
-
 @router.message(Command("price"))
-async def price(message: Message):
+async def price(message: types.Message):
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="📦 Базовый бот", callback_data="price_basic")],
         [InlineKeyboardButton(text="🚀 Бот с AI", callback_data="price_ai")],
@@ -39,7 +28,7 @@ async def price(message: Message):
     )
 
 @router.message(Command("portfolio"))
-async def portfolio(message: Message):
+async def portfolio(message: types.Message):
     await message.answer(
         "📁 *Портфолио:*\n\n"
         "• Бот для автоматического поиска клиентов (парсинг чатов + AI)\n"
@@ -51,7 +40,7 @@ async def portfolio(message: Message):
     )
 
 @router.message(Command("stats"))
-async def admin_stats(message: Message):
+async def admin_stats(message: types.Message):
     if message.from_user.id != ADMIN_CHAT_ID:
         await message.answer("Эта команда доступна только администратору.")
         return
