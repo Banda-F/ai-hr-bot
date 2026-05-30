@@ -87,7 +87,7 @@ async def admin_stats(message: types.Message):
 async def price_callback(callback: types.CallbackQuery):
     if callback.data == "price_basic":
         text = (
-            "📦 *Базовый бот* – от 30 000 ₽\n\n"
+            "📦 *Базовый бот* – от 10 000 ₽\n\n"
             "✅ *Что получите:*\n"
             "• Ваш бизнес работает 24/7 – заявки приходят даже ночью\n"
             "• Менеджеры не тратят время на ответы «сколько стоит?»\n"
@@ -98,7 +98,7 @@ async def price_callback(callback: types.CallbackQuery):
         )
     elif callback.data == "price_ai":
         text = (
-            "🚀 *Бот с AI* – от 70 000 ₽\n\n"
+            "🚀 *Бот с AI* – от 30 000 ₽\n\n"
             "✅ *Что получите:*\n"
             "• Искусственный интеллект отвечает клиентам как живой менеджер\n"
             "• Бот запоминает историю диалога – не нужно повторять одно и то же\n"
@@ -109,7 +109,7 @@ async def price_callback(callback: types.CallbackQuery):
         )
     else:
         text = (
-            "👑 *Полный комплекс (бот + CRM + админка)* – от 150 000 ₽\n\n"
+            "👑 *Полный комплекс (бот + CRM + админка)* – от 50 000 ₽\n\n"
             "✅ *Что получите:*\n"
             "• Всё из пакета «Бот с AI»\n"
             "• Личный кабинет – смотрите статистику, меняйте ответы бота без программиста\n"
