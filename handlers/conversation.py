@@ -6,7 +6,7 @@ from aiogram.filters import Command
 from utils.config import ADMIN_CHAT_ID
 from models.database import AsyncSessionLocal, Client
 from services.ai_service import GigaChatAsync
-from services.crm_writer import append_to_gsheet
+# from services.crm_writer import append_to_gsheet  # временно отключено
 import asyncio
 from datetime import datetime
 
@@ -108,8 +108,8 @@ async def send_cp(message: Message, state: FSMContext):
 async def generate_cp(sphere: str, budget: str, crm_need: str, user_id: int) -> str:
     # Простая генерация из шаблонов
     budget_lower = budget.lower()
-    if "тыс" in budget_lower or "000" in budget:
-        if "50" in budget or "100" in budget:
+    if "тыс" in budget_lower or "000" in budget_lower:
+        if "50" in budget_lower or "100" in budget_lower:
             template = "pro"
         else:
             template = "enterprise"
