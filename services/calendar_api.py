@@ -6,7 +6,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 SCOPES = ['https://www.googleapis.com/auth/calendar']
-CALENDAR_ID = 'primary'
+CALENDAR_ID = 'de5155cf23f37793c6a1dafd384e4089a6e51574'
 
 def get_calendar_service():
     creds_json = os.getenv("GOOGLE_CALENDAR_CREDS")
