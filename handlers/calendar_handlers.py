@@ -1,9 +1,11 @@
+import logging
 from aiogram import Router, types, F
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from datetime import datetime, timedelta
 from services.calendar_api import create_meeting
 
+logger = logging.getLogger(__name__)
 router = Router()
 
 @router.message(Command("available_slots"))
@@ -25,7 +27,7 @@ async def show_slots(message: types.Message):
 @router.callback_query(F.data.startswith("slot_"))
 async def slot_selected(callback: CallbackQuery):
     slot_iso = callback.data.split("_")[1]
-    client_name = callback.from_user.first_name
+    client_name = callback.from_user.full_name or callback.from_user.first_name
     try:
         meet_link, event_link = await create_meeting(client_name, slot_iso)
         await callback.message.answer(
@@ -34,6 +36,6 @@ async def slot_selected(callback: CallbackQuery):
     except Exception as e:
         logger.error(f"Ошибка создания встречи: {e}")
         await callback.message.answer(
-            "❌ Не удалось создать встречу. Пожалуйста, свяжитесь с администратором."
+            "⚠️ Не удалось создать встречу. Пожалуйста, свяжитесь с администратором."
         )
     await callback.answer()
