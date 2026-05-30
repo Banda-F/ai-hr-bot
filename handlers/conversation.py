@@ -81,6 +81,7 @@ async def send_cp(message: Message, state: FSMContext):
         "📅 Также могу записать вас на бесплатный созвон (15–20 минут), где покажу примеры работ и отвечу на вопросы.\n"
         "Выберите удобное время: /available_slots"
     )
+    await message.answer("✅ КП отправлено", reply_markup=ReplyKeyboardRemove())
 
     # Сохраняем данные в БД
     async with AsyncSessionLocal() as session:
