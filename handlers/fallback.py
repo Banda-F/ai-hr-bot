@@ -1,3 +1,5 @@
+if message.text and message.text.startswith('/'):
+    return  # не обрабатываем команды
 from aiogram import Router, types
 from aiogram.fsm.context import FSMContext
 from services.ai_service import GigaChatAsync
