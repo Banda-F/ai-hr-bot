@@ -4,8 +4,9 @@ from aiohttp import web
 from aiogram import Bot, Dispatcher
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 from handlers import commands, conversation, calendar_handlers, fallback
-from models.database import init_db
+from models.database import init_db, engine
 from utils.config import BOT_TOKEN, WEBHOOK_URL, PORT
+from sqlalchemy import text
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -19,11 +20,46 @@ dp.include_router(conversation.router)
 dp.include_router(calendar_handlers.router)
 dp.include_router(fallback.router)
 
-# Парсер временно отключён, так как отсутствует модуль parsers
+async def migrate_db():
+    """Добавляет недостающие колонки в таблицу clients."""
+    async with engine.begin() as conn:
+        # Проверяем и добавляем колонку sphere
+        res = await conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='clients' AND column_name='sphere'"))
+        if not res.fetchone():
+            await conn.execute(text("ALTER TABLE clients ADD COLUMN sphere VARCHAR"))
+            logger.info("➕ Добавлена колонка sphere")
+        # budget
+        res = await conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='clients' AND column_name='budget'"))
+        if not res.fetchone():
+            await conn.execute(text("ALTER TABLE clients ADD COLUMN budget VARCHAR"))
+            logger.info("➕ Добавлена колонка budget")
+        # crm_need
+        res = await conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='clients' AND column_name='crm_need'"))
+        if not res.fetchone():
+            await conn.execute(text("ALTER TABLE clients ADD COLUMN crm_need VARCHAR"))
+            logger.info("➕ Добавлена колонка crm_need")
+        # score
+        res = await conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='clients' AND column_name='score'"))
+        if not res.fetchone():
+            await conn.execute(text("ALTER TABLE clients ADD COLUMN score INTEGER DEFAULT 0"))
+            logger.info("➕ Добавлена колонка score")
+        # cp_sent
+        res = await conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='clients' AND column_name='cp_sent'"))
+        if not res.fetchone():
+            await conn.execute(text("ALTER TABLE clients ADD COLUMN cp_sent INTEGER DEFAULT 0"))
+            logger.info("➕ Добавлена колонка cp_sent")
+        # appointment_date
+        res = await conn.execute(text("SELECT column_name FROM information_schema.columns WHERE table_name='clients' AND column_name='appointment_date'"))
+        if not res.fetchone():
+            await conn.execute(text("ALTER TABLE clients ADD COLUMN appointment_date VARCHAR"))
+            logger.info("➕ Добавлена колонка appointment_date")
+
+# Парсер временно отключён
 # from parsers.telegram_parser import periodic_finding
 
 async def on_startup():
     await init_db()
+    await migrate_db()
     await bot.delete_webhook(drop_pending_updates=True)
     await bot.set_webhook(
         url=f"{WEBHOOK_URL}/webhook",
