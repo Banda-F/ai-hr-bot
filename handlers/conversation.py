@@ -100,9 +100,9 @@ async def send_cp(message: Message, state: FSMContext):
     # Уведомление админу
     if ADMIN_CHAT_ID:
         await message.bot.send_message(
-        ADMIN_CHAT_ID,
-        f"📄 Новое КП отправлено\nКлиент: @{message.from_user.username or user_id}\nСфера: {sphere}\nБюджет: {budget}"
-    )
+    ADMIN_CHAT_ID,
+    f"📄 Новое КП отправлено\nКлиент: @{message.from_user.username or user_id}\nСфера: {sphere}\nБюджет: {budget}"
+)
     await state.clear()
 
 async def generate_cp(sphere: str, budget: str, crm_need: str, user_id: int) -> str:
