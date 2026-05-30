@@ -1,6 +1,9 @@
+import os
 from aiogram import Router, types
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from sqlalchemy import select
+from models.database import AsyncSessionLocal, Client
 
 router = Router()
 
@@ -9,7 +12,7 @@ async def start(message: types.Message):
     await message.answer(
         "🤖 *Привет! Я AI-бот для создания AI-ботов.*\n\n"
         "Помогаю предпринимателям и бизнесам автоматизировать продажи, поддержку и сбор заявок с помощью Telegram-ботов.\n\n"
-        "🔹 *Цены* – /price\n"
+        "🔹 *Примеры работ и цены* – /price\n"
         "🔹 *Портфолио* – /portfolio\n"
         "🔹 *Связаться со мной* – /contact\n\n"
         "_Просто напишите, что нужно – я отвечу и помогу подобрать решение._",
@@ -56,6 +59,29 @@ async def portfolio(message: types.Message):
         "Могу показать демо в работе. /contact для связи.",
         parse_mode="Markdown"
     )
+
+@router.message(Command("stats"))
+async def admin_stats(message: types.Message):
+    ADMIN_CHAT_ID = int(os.getenv("ADMIN_CHAT_ID", 0))
+    if message.from_user.id != ADMIN_CHAT_ID:
+        await message.answer("Эта команда доступна только администратору.")
+        return
+    async with AsyncSessionLocal() as session:
+        total = (await session.execute(select(Client))).scalars().all()
+        total_count = len(total)
+        new_count = len([c for c in total if c.status == "new"])
+        contacted = len([c for c in total if c.status == "contacted"])
+        negotiation = len([c for c in total if c.status == "negotiation"])
+        closed = len([c for c in total if c.status == "closed"])
+        await message.answer(
+            f"📊 *Статистика CRM*\n"
+            f"Всего клиентов: {total_count}\n"
+            f"🆕 Новые: {new_count}\n"
+            f"📞 Связались: {contacted}\n"
+            f"🤝 Переговоры: {negotiation}\n"
+            f"✅ Закрыто: {closed}",
+            parse_mode="Markdown"
+        )
 
 @router.callback_query(lambda c: c.data.startswith("price_"))
 async def price_callback(callback: types.CallbackQuery):
