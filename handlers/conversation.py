@@ -6,12 +6,11 @@ from aiogram.filters import Command
 from utils.config import ADMIN_CHAT_ID
 from models.database import AsyncSessionLocal, Client
 from services.ai_service import GigaChatAsync
-# from services.crm_writer import append_to_gsheet  # временно отключено
 import asyncio
 from datetime import datetime
 
 router = Router()
-giga = GigaChatAsync()  # глобально или передавать через диспетчер
+giga = GigaChatAsync()
 
 class SalesConversation(StatesGroup):
     sphere = State()
@@ -69,14 +68,15 @@ async def ask_crm(message: Message, state: FSMContext):
 @router.message(SalesConversation.confirm_cp, F.text == "✅ Да, отправить КП")
 async def send_cp(message: Message, state: FSMContext):
     data = await state.get_data()
-    sphere = data.get("sphere")
-    budget = data.get("budget")
-    crm_need = data.get("crm_need")
+    sphere = data.get("sphere", "не указано")
+    budget = data.get("budget", "не указан")
+    crm_need = data.get("crm_need", "не указано")
     user_id = message.from_user.id
 
-    # Выбираем шаблон КП на основе бюджета
+    # Генерируем КП без Markdown (простой текст)
     cp_text = await generate_cp(sphere, budget, crm_need, user_id)
-    await message.answer(cp_text, parse_mode="Markdown")
+    # Отправляем как обычный текст (без parse_mode)
+    await message.answer(cp_text)
     await message.answer(
         "📅 Также могу записать вас на бесплатный созвон (15–20 минут), где покажу примеры работ и отвечу на вопросы.\n"
         "Выберите удобное время: /available_slots"
@@ -106,7 +106,7 @@ async def send_cp(message: Message, state: FSMContext):
     await state.clear()
 
 async def generate_cp(sphere: str, budget: str, crm_need: str, user_id: int) -> str:
-    # Простая генерация из шаблонов
+    # Простая генерация из шаблонов (без Markdown)
     budget_lower = budget.lower()
     if "тыс" in budget_lower or "000" in budget_lower:
         if "50" in budget_lower or "100" in budget_lower:
@@ -118,57 +118,57 @@ async def generate_cp(sphere: str, budget: str, crm_need: str, user_id: int) -> 
 
     if template == "starter":
         return f"""
-**🤖 Коммерческое предложение для вас**
+🤖 КОММЕРЧЕСКОЕ ПРЕДЛОЖЕНИЕ
 
-*Сфера:* {sphere}
-*Бюджет:* {budget}
+Сфера: {sphere}
+Бюджет: {budget}
 
-✅ **Базовый чат-бот на Telegram**
+✅ Базовый чат-бот на Telegram
 - Автоматический сбор заявок
 - Интеграция с Google Sheets
 - Уведомления менеджеру
 - Простая панель управления
 
-💰 **Стоимость:** от 30 000 ₽  
-⏱ **Срок:** 3-5 дней
+💰 Стоимость: от 30 000 ₽
+⏱ Срок: 3-5 дней
 
 Готовы обсудить детали? Напишите /contact
 """
     elif template == "pro":
         return f"""
-**🚀 Коммерческое предложение (Pro)**
+🚀 КОММЕРЧЕСКОЕ ПРЕДЛОЖЕНИЕ (PRO)
 
-*Сфера:* {sphere}
-*Бюджет:* {budget}
-*CRM интеграция:* {crm_need}
+Сфера: {sphere}
+Бюджет: {budget}
+CRM интеграция: {crm_need}
 
-✅ **AI-чат-бот с нейросетью**
+✅ AI-чат-бот с нейросетью
 - Умные ответы на вопросы клиентов
 - Контекстный диалог
 - Анализ настроений
 - Интеграция с {crm_need if crm_need != 'Нет' else 'CRM по желанию'}
 
-💰 **Стоимость:** от 70 000 ₽  
-⏱ **Срок:** 7-10 дней
+💰 Стоимость: от 70 000 ₽
+⏱ Срок: 7-10 дней
 
 Запишитесь на созвон: /available_slots
 """
     else:
         return f"""
-**👑 Коммерческое предложение (Enterprise)**
+👑 КОММЕРЧЕСКОЕ ПРЕДЛОЖЕНИЕ (ENTERPRISE)
 
-*Сфера:* {sphere}
-*Бюджет:* {budget}
-*CRM интеграция:* {crm_need}
+Сфера: {sphere}
+Бюджет: {budget}
+CRM интеграция: {crm_need}
 
-✅ **Полный комплекс (бот + CRM + веб-админка)**
+✅ Полный комплекс (бот + CRM + веб-админка)
 - Всё из Pro-пакета
 - Личный кабинет клиента для управления ботом
 - Расширенная аналитика и дашборды
 - Приоритетная поддержка 24/7
 
-💰 **Стоимость:** от 150 000 ₽  
-⏱ **Срок:** 2-3 недели
+💰 Стоимость: от 150 000 ₽
+⏱ Срок: 2-3 недели
 
 Персональная демонстрация: /available_slots
 """
