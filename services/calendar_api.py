@@ -5,8 +5,14 @@ from datetime import datetime, timedelta
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
+# --- ПЕРЕМЕННЫЕ ДЛЯ НАСТРОЙКИ ---
+# !!! ВАЖНО: Замените 'ваш-email@gmail.com' на ваш реальный email
+MY_EMAIL = 'eugen.myakotin@gmail.com'
+# Убедитесь, что здесь используется ID вашего календаря
+CALENDAR_ID = 'eugen.myakotin@gmail.com'
+# -------------------------------
+
 SCOPES = ['https://www.googleapis.com/auth/calendar']
-CALENDAR_ID = 'de5155cf23f37793c6a1dafd384e4089a6e51574'
 
 def get_calendar_service():
     creds_json = os.getenv("GOOGLE_CALENDAR_CREDS")
@@ -29,11 +35,8 @@ async def create_meeting(client_name: str, start_time_iso: str, duration_minutes
     
     event = {
         'summary': f'Созвон с клиентом {client_name}',
-        'description': (
-            'Обсуждение разработки AI-чат-бота.\n'
-            'Ссылка для созвона будет отправлена перед встречей (Telegram, Zoom или Яндекс Телемост).\n'
-            'Если вам удобнее другой сервис — сообщите.'
-        ),
+        'description': 'Обсуждение разработки AI-чат-бота.\n\n'
+                       'Ссылка для созвона будет отправлена отдельным сообщением (Telegram, Zoom или Яндекс Телемост).',
         'start': {
             'dateTime': start_time.isoformat(),
             'timeZone': 'Europe/Moscow',
@@ -42,10 +45,17 @@ async def create_meeting(client_name: str, start_time_iso: str, duration_minutes
             'dateTime': end_time.isoformat(),
             'timeZone': 'Europe/Moscow',
         },
-        'attendees': [],  # можно добавить email клиента, если он известен
+        'attendees': [
+            {'email': MY_EMAIL}  # <-- Добавляем вас как участника
+        ],
     }
     
-    created_event = service.events().insert(calendarId=CALENDAR_ID, body=event).execute()
+    created_event = service.events().insert(
+        calendarId=CALENDAR_ID,  # <-- Используем ID вашего календаря
+        body=event,
+        sendUpdates='all'        # <-- Отправляем приглашение на почту
+    ).execute()
+    
     event_link = created_event.get('htmlLink')
-    meet_link = "🔗 Ссылка на созвон будет отправлена отдельным сообщением (выберите удобный сервис: Telegram, Zoom, Яндекс Телемост)"
+    meet_link = "🔗 Ссылка на созвон будет отправлена отдельным сообщением"
     return meet_link, event_link
